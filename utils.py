@@ -1,4 +1,7 @@
 import json
+import os
+
+from PySide6.QtWidgets import QWidget
 
 
 class Config:
@@ -18,3 +21,8 @@ class Config:
         fw = open('data/config.json', 'w', encoding="utf-8")
         fw.write(json.dumps(config_data))
         fw.close()
+
+
+def add_extra_stylesheet(o: QWidget, extra_stylesheet: str):
+    stylesheet = o.styleSheet()
+    o.setStyleSheet(stylesheet + extra_stylesheet.format(**os.environ))

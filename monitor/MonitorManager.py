@@ -34,6 +34,10 @@ class MonitorManager(QObject):
         u = user.User(uid)
         screen: MonitorScreen = self.find_screen_by_uid(uid)
 
+        user_info = self.get_user_info(u)
+        avatar_url = user_info['avatar_url']
+        screen.update_avatar(avatar_url)
+
         new_dynamic_data = self.get_dynamic_data(u)
         dynamic_update = DataManager.update_up_data(uid, "dynamic", new_dynamic_data)
         screen.update_label("dynamic", dict(dynamic_update=dynamic_update, id=new_dynamic_data['id']))
@@ -51,6 +55,13 @@ class MonitorManager(QObject):
         for monitor in self.monitors:
             if monitor.screen.uid == uid:
                 return monitor.screen
+
+    # 获取up资料
+    @staticmethod
+    def get_user_info(u: user.User):
+        user_info = sync(u.get_user_info())
+        avatar_url = user_info['face']
+        return dict(avatar_url=avatar_url)
 
     # 获取up动态信息
     @staticmethod

@@ -4,7 +4,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QHBoxLayout, QFrame
 
-from utils import Config
+from utils import Config, add_extra_stylesheet
 from .DataManager import DataManager
 from .MonitorButton import MonitorButton
 from .MonitorScreen import MonitorScreen
@@ -21,9 +21,7 @@ class Monitor(QFrame):
         super().__init__()
 
         self.setMinimumSize(*Config.load('min_size'))
-        stylesheet = self.styleSheet()
-        extra_stylesheet = ".Monitor{{}}"
-        self.setStyleSheet(stylesheet + extra_stylesheet.format(**os.environ))
+        add_extra_stylesheet(self, ".Monitor{{}}")
         self.layout = QHBoxLayout(self)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
         self.position = position
