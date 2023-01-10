@@ -1,7 +1,8 @@
 import requests
 from PySide6.QtCore import Qt, QPropertyAnimation, Property
 from PySide6.QtGui import QImage, QPixmap, QPainter, QPainterPath
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsPixmapItem, QGraphicsScene, QGraphicsView
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsPixmapItem, QGraphicsScene, QGraphicsView, \
+    QHBoxLayout
 
 
 class MonitorScreen(QWidget):
@@ -13,8 +14,8 @@ class MonitorScreen(QWidget):
     animation: QPropertyAnimation = None
     target: QPixmap = None
     pixmap: QPixmap = None
-    pixmap_item: QGraphicsPixmapItem = None
     avatar_url: str = None
+    label_widget: QWidget = None
     dynamic: QLabel = None
     dynamic_check: bool = True
     video: QLabel = None
@@ -29,22 +30,28 @@ class MonitorScreen(QWidget):
 
     # 初始化ui
     def init_ui(self):
-        v_box = QVBoxLayout(self)
-        self.init_avatar(v_box)
-        self.dynamic = QLabel("")
-        self.video = QLabel("")
-        self.live = QLabel("")
-        # v_box.addWidget(self.dynamic)
-        # v_box.addSpacing(5)
-        # v_box.addWidget(self.video)
-        # v_box.addSpacing(5)
-        # v_box.addWidget(self.live)
+        h_box = QHBoxLayout(self)
+        self.init_avatar(h_box)
+        self.init_label(h_box)
 
-    def init_avatar(self, v_box: QVBoxLayout):
+    def init_avatar(self, h_box: QHBoxLayout):
         self.avatar = QLabel()
         self.target = QPixmap(self.size, self.size)
         self.target.fill(Qt.transparent)
-        v_box.addWidget(self.avatar)
+        h_box.addWidget(self.avatar)
+
+    def init_label(self, h_box: QHBoxLayout):
+        self.label_widget = QWidget()
+        v_box = QVBoxLayout(self.label_widget)
+        h_box.addWidget(self.label_widget)
+        self.dynamic = QLabel("")
+        self.video = QLabel("")
+        self.live = QLabel("")
+        v_box.addWidget(self.dynamic)
+        v_box.addSpacing(5)
+        v_box.addWidget(self.video)
+        v_box.addSpacing(5)
+        v_box.addWidget(self.live)
 
     #  更新头像
     def update_avatar(self, avatar_url: str) -> bool:
@@ -54,8 +61,6 @@ class MonitorScreen(QWidget):
         img = QImage.fromData(res.content)
         self.pixmap = QPixmap.fromImage(img).scaled(self.size, self.size, Qt.KeepAspectRatioByExpanding,
                                                     Qt.SmoothTransformation)
-
-        self.avatar.show()
         if self.animation is None: self.start_animation()
         return True
 
