@@ -6,13 +6,13 @@ class DataManager:
     
     @staticmethod
     def load_up_data():
-        fr = open('data/up_data.json', 'r', encoding='utf-8')
+        fr = open('up_data.json', 'r', encoding='utf-8')
         DataManager.up_data = json.load(fr)
         fr.close()
     
     @staticmethod
     def write_up_data():
-        fw = open('data/up_data.json', 'w', encoding='utf-8')
+        fw = open('up_data.json', 'w', encoding='utf-8')
         fw.write(json.dumps(DataManager.up_data))
         fw.close()
     
