@@ -1,5 +1,3 @@
-import os
-
 from PySide6.QtCore import Signal
 from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QHBoxLayout, QFrame
@@ -21,7 +19,6 @@ class Monitor(QFrame):
         super().__init__()
 
         self.setMinimumSize(*Config.load('min_size'))
-        add_extra_stylesheet(self, ".Monitor{{}}")
         self.layout = QHBoxLayout(self)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
         self.position = position

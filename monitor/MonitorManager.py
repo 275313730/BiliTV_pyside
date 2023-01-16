@@ -4,15 +4,18 @@ from bilibili_api import user, sync
 from monitor.DataManager import DataManager
 from monitor.Monitor import Monitor
 from monitor.MonitorScreen import MonitorScreen
+from utils import set_timeout
 
 
 class MonitorManager(QObject):
     monitors: list[Monitor] = []
     add_up_signal = Signal(int)
+    start_loop_signal = Signal()
 
     def __init__(self):
         super().__init__()
         self.add_up_signal.connect(self.get_new_data)
+        self.start_loop_signal.connect(self.loop)
 
     # 添加监控器
     def add_monitor(self, monitor: Monitor):
@@ -26,8 +29,8 @@ class MonitorManager(QObject):
     # 循环获取up信息
     def loop(self):
         for data in DataManager.up_data:
-            self.get_new_data(data['uid'])
-        pass
+            self.get_new_data(int(data['uid']))
+        set_timeout(60000, self.loop)
 
     # 获取up信息
     def get_new_data(self, uid: int):
@@ -94,4 +97,4 @@ class MonitorManager(QObject):
     def get_live_info(u: user.User):
         live_data = sync(u.get_live_info())
         live_info = live_data['live_room']
-        return dict(live_status=live_info['liveStatus'], url=live_info['url'])
+        return dict(live_status=int(live_info['liveStatus']), url=live_info['url'])

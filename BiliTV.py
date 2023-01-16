@@ -16,6 +16,7 @@ class BiliTV(QMainWindow, QtStyleTools):
         super().__init__()
         self.init_window()
         self.create_monitor()
+        self.monitorManager.start_loop_signal.emit()
         self.show()
 
     def init_window(self):
