@@ -5,30 +5,29 @@ from qt_material import QtStyleTools
 
 from monitor.MonitorManager import MonitorManager
 from monitor.Monitor import Monitor
-from utils import Config
+from utils import Config, add_extra_stylesheet
 
 
 class BiliTV(QMainWindow, QtStyleTools):
     layout: QGridLayout = None
     monitorManager = MonitorManager()
-
+    
     def __init__(self):
         super().__init__()
         self.init_window()
         self.create_monitor()
         self.monitorManager.start_loop_signal.emit()
         self.show()
-
+    
     def init_window(self):
         self.apply_stylesheet(self, theme=f'{Config.load("current_theme")}.xml')
         central_widget = QWidget()
-        extra_stylesheet = ".BiliTV{{background-color:{QTMATERIAL_SECONDARYCOLOR}}}"
-        self.setStyleSheet(extra_stylesheet.format(**os.environ))
+        add_extra_stylesheet(self, ".BiliTV{{background-color:{QTMATERIAL_SECONDARYCOLOR}}}")
         self.setCentralWidget(central_widget)
         self.layout = QGridLayout(central_widget)
         self.move(200, 200)
         self.setWindowTitle("BiliTV")
-
+    
     def create_monitor(self):
         for i in range(Config.load('max_row')):
             for j in range(Config.load('window_per_row')):

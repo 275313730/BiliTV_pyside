@@ -1,8 +1,7 @@
 import json
 import os
-import sys
-import logging
 from threading import Timer
+
 from PySide6.QtWidgets import QWidget
 
 
@@ -26,11 +25,10 @@ class Config:
 
 
 def add_extra_stylesheet(o: QWidget, extra_stylesheet: str):
-    stylesheet = o.styleSheet()
-    o.setStyleSheet(stylesheet + extra_stylesheet.format(**os.environ))
+    o.setStyleSheet(extra_stylesheet.format(**os.environ))
 
 
-def set_timeout(ms, fn, *args, **kwargs):
+def set_timeout(ms: float, fn: callable, *args, **kwargs):
     t = Timer(ms / 1000., fn, args=args, kwargs=kwargs)
     t.start()
     return t

@@ -11,12 +11,13 @@ class MonitorManager(QObject):
     monitors: list[Monitor] = []
     add_up_signal = Signal(int)
     start_loop_signal = Signal()
-
+    loop_time: float = 10000
+    
     def __init__(self):
         super().__init__()
         self.add_up_signal.connect(self.get_new_data)
         self.start_loop_signal.connect(self.loop)
-
+    
     # 添加监控器
     def add_monitor(self, monitor: Monitor):
         monitor.add_up_signal = self.add_up_signal
@@ -25,47 +26,61 @@ class MonitorManager(QObject):
             up = DataManager.get_up_data_from_position(monitor.position)
             monitor.emit_uid(up['uid'])
             DataManager.add_up(up['uid'], monitor.position)
-
+    
     # 循环获取up信息
     def loop(self):
-        for data in DataManager.up_data:
+        for data in DataManager.all_up_data:
             self.get_new_data(int(data['uid']))
-        set_timeout(60000, self.loop)
-
+        set_timeout(self.loop_time, self.loop)
+    
     # 获取up信息
     def get_new_data(self, uid: int):
         u = user.User(uid)
         screen: MonitorScreen = self.find_screen_by_uid(uid)
-
-        user_info = self.get_user_info(u)
-        avatar_url = user_info['avatar_url']
-        screen.update_avatar(avatar_url)
-
-        new_dynamic_data = self.get_dynamic_data(u)
-        dynamic_update = DataManager.update_up_data(uid, "dynamic", new_dynamic_data)
-        screen.update_label("dynamic", dict(dynamic_update=dynamic_update, id=new_dynamic_data['id']))
-
-        new_video_data = self.get_video_data(u)
-        video_update = DataManager.update_up_data(uid, "video", new_video_data)
-        screen.update_label("video", dict(video_update=video_update, bvid=new_video_data['bvid']))
-
-        new_live_info = self.get_live_info(u)
-        DataManager.update_up_data(uid, "live", new_live_info)
-        screen.update_label("live", new_live_info)
-
+        up_data = DataManager.get_up_data_from_uid(uid)
+        
+        if DataManager.need_update(uid, "user"):
+            new_user_info = self.get_user_info(u)
+            DataManager.update_up_data(uid, "user", new_user_info)
+            screen.update_user_info(new_user_info)
+        else:
+            screen.update_user_info(up_data["user"])
+        
+        if DataManager.need_update(uid, "dynamic"):
+            new_dynamic_data = self.get_dynamic_data(u)
+            DataManager.update_up_data(uid, "dynamic", new_dynamic_data)
+            screen.update_label("dynamic", dict(id=new_dynamic_data['id']))
+        else:
+            screen.update_label("dynamic", dict(id=up_data["dynamic"]['id']))
+        
+        if DataManager.need_update(uid, "video"):
+            new_video_data = self.get_video_data(u)
+            DataManager.update_up_data(uid, "video", new_video_data)
+            screen.update_label("video", dict(bvid=new_video_data['bvid']))
+        else:
+            screen.update_label("video", dict(bvid=up_data['video']['bvid']))
+        
+        if DataManager.need_update(uid, "live"):
+            new_live_info = self.get_live_info(u)
+            DataManager.update_up_data(uid, "live", new_live_info)
+            screen.update_label("live", new_live_info)
+        else:
+            screen.update_label("live", up_data['live'])
+    
     # 根据uid获取screen
     def find_screen_by_uid(self, uid: int):
         for monitor in self.monitors:
             if monitor.screen.uid == uid:
                 return monitor.screen
-
+    
     # 获取up资料
     @staticmethod
     def get_user_info(u: user.User):
         user_info = sync(u.get_user_info())
         avatar_url = user_info['face']
-        return dict(avatar_url=avatar_url)
-
+        nickname = user_info['name']
+        return dict(nick_name=nickname, avatar_url=avatar_url)
+    
     # 获取up动态信息
     @staticmethod
     def get_dynamic_data(u: user.User):
@@ -81,7 +96,7 @@ class MonitorManager(QObject):
             last_dynamic = dynamics[0]['desc']
             return dict(time=last_dynamic['timestamp'], id=last_dynamic['dynamic_id'])
         return dict(time=0, url="")
-
+    
     # 获取up视频信息
     @staticmethod
     def get_video_data(u: user.User):
@@ -91,7 +106,7 @@ class MonitorManager(QObject):
             video_info = video_list[0]
             return dict(time=video_info['created'], bvid=video_info['bvid'])
         return dict(time=0, bvid="")
-
+    
     # 获取up直播信息
     @staticmethod
     def get_live_info(u: user.User):
