@@ -1,14 +1,18 @@
 import requests
-from PySide6.QtCore import Qt, QPropertyAnimation, Property
-from PySide6.QtGui import QImage, QPixmap, QPainter, QPainterPath
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout
+from PySide6.QtCore import Qt, QPropertyAnimation, Property, Signal
+from PySide6.QtGui import QImage, QPixmap, QPainter, QPainterPath, QMouseEvent
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QInputDialog, QMessageBox
 
+from monitor.DataManager import DataManager
 from utils import add_extra_stylesheet
 
 
 class MonitorScreen(QWidget):
     uid: int = 0
     size: int = 95
+    
+    change_up_signal: Signal = None
+    emit_reset: callable = None
     
     avatar: QLabel = None
     animation: QPropertyAnimation = None
@@ -27,9 +31,10 @@ class MonitorScreen(QWidget):
     switch: QLabel = None
     close: QLabel = None
     
-    def __init__(self, uid: int):
+    def __init__(self, uid: int, emit_reset: callable):
         super().__init__()
         self.uid = uid
+        self.emit_reset = emit_reset
         self.init_ui()
         self.show()
     
@@ -37,19 +42,65 @@ class MonitorScreen(QWidget):
     def init_ui(self):
         v_box = QVBoxLayout(self)
         v_box.setContentsMargins(0, 5, 0, 0)
+        self.init_top_side(v_box)
+        self.init_center_side(v_box)
+    
+    def init_top_side(self, v_box: QVBoxLayout):
+        h_widget = QWidget()
+        h_box = QHBoxLayout(h_widget)
+        h_box.setContentsMargins(5, 0, 5, 0)
+        v_box.addWidget(h_widget)
+        
         self.nick_name = QLabel("")
         add_extra_stylesheet(self.nick_name, ".QLabel{{color:white;}}")
         self.nick_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        v_box.addWidget(self.nick_name)
+        
+        self.switch = QLabel("<>", self)
+        self.close = QLabel("X", self)
+        self.switch.enterEvent(self.switch.setCursor(Qt.CursorShape.PointingHandCursor))
+        self.close.enterEvent(self.close.setCursor(Qt.CursorShape.PointingHandCursor))
+        self.switch.mouseReleaseEvent = self.on_switch_click
+        self.close.mouseReleaseEvent = self.on_close_click
+        add_extra_stylesheet(self.switch, ".QLabel{{color:white;}}")
+        add_extra_stylesheet(self.close, ".QLabel{{color:white;}}")
+        
+        h_box.addStretch(2)
+        h_box.addWidget(self.nick_name)
+        h_box.addStretch(1)
+        h_box.addWidget(self.switch)
+        h_box.addWidget(self.close)
+    
+    def on_switch_click(self, event: QMouseEvent):
+        print(event)
+        text, ok = QInputDialog.getText(self, 'uid设置',
+                                        '输入up主的uid:')
+        if ok:
+            if text.isnumeric():
+                new_uid = int(text)
+                if DataManager.check_up_exist(new_uid):
+                    QMessageBox.about(self, "错误", "up主已添加")
+                else:
+                    old_uid = self.uid
+                    self.uid = new_uid
+                    self.change_up_signal.emit(old_uid, new_uid)
+            else:
+                QMessageBox.about(self, "错误", "请输入数字")
+    
+    def on_close_click(self, event: QMouseEvent):
+        print(event)
+        self.emit_reset(self.uid)
+    
+    def init_center_side(self, v_box: QVBoxLayout):
         h_widget = QWidget()
         h_box = QHBoxLayout(h_widget)
-        h_box.setContentsMargins(0, 0, 0, 10)
+        h_box.setContentsMargins(0, 5, 0, 10)
         v_box.addWidget(h_widget)
-        self.init_user(h_box)
+        h_box.addStretch(1)
+        self.init_avatar(h_box)
         self.init_label(h_box)
-        self.init_tool()
+        h_box.addStretch(1)
     
-    def init_user(self, h_box: QHBoxLayout):
+    def init_avatar(self, h_box: QHBoxLayout):
         self.avatar = QLabel()
         self.target = QPixmap(self.size, self.size)
         self.target.fill(Qt.transparent)
@@ -66,14 +117,6 @@ class MonitorScreen(QWidget):
         v_box.addWidget(self.dynamic)
         v_box.addWidget(self.video)
         v_box.addWidget(self.live)
-    
-    def init_tool(self):
-        self.switch = QLabel("=", self)
-        self.close = QLabel("X", self)
-        add_extra_stylesheet(self.switch, ".QLabel{{color:white;}}")
-        add_extra_stylesheet(self.close, ".QLabel{{color:white;}}")
-        self.close.move(self.width() - 10, self.height() - 10)
-        self.switch.move(self.width() - 20, self.height() - 10)
     
     #  更新用户信息
     def update_user_info(self, user_info: dict) -> bool:

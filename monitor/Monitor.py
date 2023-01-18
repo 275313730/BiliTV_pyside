@@ -11,6 +11,7 @@ from .MonitorScreen import MonitorScreen
 class Monitor(QFrame):
     position: list[int] = []
     add_up_signal: Signal = None
+    change_up_signal: Signal = None
     button: MonitorButton = None
     screen: MonitorScreen = None
     layout: QHBoxLayout = None
@@ -31,16 +32,18 @@ class Monitor(QFrame):
         self.button = button
     
     def create_screen(self, uid: int):
-        screen = MonitorScreen(uid)
+        screen = MonitorScreen(uid, self.emit_reset)
         self.layout.addWidget(screen)
         self.screen = screen
+        self.screen.change_up_signal = self.change_up_signal
         DataManager.add_up(uid, self.position)
         self.add_up_signal.emit(uid)
     
     def emit_uid(self, uid: int):
-        self.button.deleteLater()
+        self.button.hide()
         self.create_screen(uid)
     
-    def emit_reset(self):
+    def emit_reset(self, uid: int):
         self.screen.deleteLater()
-        self.create_button()
+        DataManager.del_up(uid)
+        self.button.show()

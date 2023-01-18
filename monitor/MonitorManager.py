@@ -10,17 +10,20 @@ from utils import set_timeout
 class MonitorManager(QObject):
     monitors: list[Monitor] = []
     add_up_signal = Signal(int)
+    change_up_signal = Signal(int, int)
     start_loop_signal = Signal()
     loop_time: float = 10000
     
     def __init__(self):
         super().__init__()
         self.add_up_signal.connect(self.get_new_data)
+        self.change_up_signal.connect(self.change_up)
         self.start_loop_signal.connect(self.loop)
     
     # 添加监控器
     def add_monitor(self, monitor: Monitor):
         monitor.add_up_signal = self.add_up_signal
+        monitor.change_up_signal = self.change_up_signal
         self.monitors.append(monitor)
         if DataManager.check_position_exist(monitor.position):
             up = DataManager.get_up_data_from_position(monitor.position)
@@ -66,6 +69,13 @@ class MonitorManager(QObject):
             screen.update_label("live", new_live_info)
         else:
             screen.update_label("live", up_data['live'])
+    
+    def change_up(self, old_uid: int, new_uid: int):
+        old_data = DataManager.get_up_data_from_uid(old_uid)
+        position = old_data["position"]
+        DataManager.del_up(old_uid)
+        DataManager.add_up(new_uid, position)
+        self.get_new_data(new_uid)
     
     # 根据uid获取screen
     def find_screen_by_uid(self, uid: int):

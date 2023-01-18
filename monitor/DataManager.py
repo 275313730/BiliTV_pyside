@@ -46,24 +46,13 @@ class DataManager:
     @staticmethod
     def add_up(uid, position):
         if DataManager.check_up_exist(uid): return False
-        if DataManager.check_position_exist(position):
-            DataManager.modify_up(uid, position)
-        else:
-            DataManager.all_up_data.append(
-                dict(uid=uid, position=position, user=dict(avatar_url="", nick_name="", last_check_time=0),
-                     dynamic=dict(time=0, id=0, last_check_time=0),
-                     video=dict(time=0, bvid=0, last_check_time=0),
-                     live=dict(live_status=0, url='', last_check_time=0)))
+        DataManager.all_up_data.append(
+            dict(uid=uid, position=position, user=dict(avatar_url="", nick_name="", last_check_time=0),
+                 dynamic=dict(time=0, id=0, last_check_time=0),
+                 video=dict(time=0, bvid=0, last_check_time=0),
+                 live=dict(live_status=0, url='', last_check_time=0)))
         DataManager.write_up_data()
         return True
-    
-    @staticmethod
-    def modify_up(uid, position):
-        for data in DataManager.all_up_data:
-            if data['position'] != position: continue
-            data['uid'] = uid
-            return True
-        return False
     
     @staticmethod
     def del_up(uid):
