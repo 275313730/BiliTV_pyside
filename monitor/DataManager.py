@@ -1,4 +1,5 @@
 import json
+import os
 import time
 
 
@@ -7,9 +8,12 @@ class DataManager:
     
     @staticmethod
     def load_up_data():
-        fr = open('up_data.json', 'r', encoding='utf-8')
-        DataManager.all_up_data = json.load(fr)
-        fr.close()
+        if os.path.exists('up_data.json'):
+            fr = open('up_data.json', 'r', encoding='utf-8')
+            DataManager.all_up_data = json.load(fr)
+            fr.close()
+        else:
+            DataManager.write_up_data()
     
     @staticmethod
     def write_up_data():

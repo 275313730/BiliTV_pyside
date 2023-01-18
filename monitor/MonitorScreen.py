@@ -1,9 +1,8 @@
 import requests
 from PySide6.QtCore import Qt, QPropertyAnimation, Property, Signal
 from PySide6.QtGui import QImage, QPixmap, QPainter, QPainterPath, QMouseEvent
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QInputDialog, QMessageBox
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout
 
-from monitor.DataManager import DataManager
 from utils import add_extra_stylesheet
 
 
@@ -11,7 +10,6 @@ class MonitorScreen(QWidget):
     uid: int = 0
     size: int = 95
     
-    change_up_signal: Signal = None
     emit_reset: callable = None
     
     avatar: QLabel = None
@@ -28,7 +26,6 @@ class MonitorScreen(QWidget):
     live: QLabel = None
     live_status: bool = False
     
-    switch: QLabel = None
     close: QLabel = None
     
     def __init__(self, uid: int, emit_reset: callable):
@@ -55,36 +52,15 @@ class MonitorScreen(QWidget):
         add_extra_stylesheet(self.nick_name, ".QLabel{{color:white;}}")
         self.nick_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        self.switch = QLabel("<>", self)
         self.close = QLabel("X", self)
-        self.switch.enterEvent(self.switch.setCursor(Qt.CursorShape.PointingHandCursor))
         self.close.enterEvent(self.close.setCursor(Qt.CursorShape.PointingHandCursor))
-        self.switch.mouseReleaseEvent = self.on_switch_click
         self.close.mouseReleaseEvent = self.on_close_click
-        add_extra_stylesheet(self.switch, ".QLabel{{color:white;}}")
         add_extra_stylesheet(self.close, ".QLabel{{color:white;}}")
         
         h_box.addStretch(2)
         h_box.addWidget(self.nick_name)
         h_box.addStretch(1)
-        h_box.addWidget(self.switch)
         h_box.addWidget(self.close)
-    
-    def on_switch_click(self, event: QMouseEvent):
-        print(event)
-        text, ok = QInputDialog.getText(self, 'uid设置',
-                                        '输入up主的uid:')
-        if ok:
-            if text.isnumeric():
-                new_uid = int(text)
-                if DataManager.check_up_exist(new_uid):
-                    QMessageBox.about(self, "错误", "up主已添加")
-                else:
-                    old_uid = self.uid
-                    self.uid = new_uid
-                    self.change_up_signal.emit(old_uid, new_uid)
-            else:
-                QMessageBox.about(self, "错误", "请输入数字")
     
     def on_close_click(self, event: QMouseEvent):
         print(event)
