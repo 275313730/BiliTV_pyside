@@ -52,8 +52,8 @@ class DataManager:
         if DataManager.check_up_exist(uid): return False
         DataManager.all_up_data.append(
             dict(uid=uid, position=position, user=dict(avatar_url="", nick_name="", last_check_time=0),
-                 dynamic=dict(time=0, id=0, last_check_time=0),
-                 video=dict(time=0, bvid=0, last_check_time=0),
+                 dynamic=dict(time=0, id=0, last_check_time=0, read=True),
+                 video=dict(time=0, bvid=0, last_check_time=0, read=True),
                  live=dict(live_status=0, url='', last_check_time=0)))
         DataManager.write_up_data()
         return True

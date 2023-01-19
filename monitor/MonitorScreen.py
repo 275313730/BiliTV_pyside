@@ -1,5 +1,5 @@
 import requests
-from PySide6.QtCore import Qt, QPropertyAnimation, Property, Signal
+from PySide6.QtCore import Qt, QPropertyAnimation, Property
 from PySide6.QtGui import QImage, QPixmap, QPainter, QPainterPath, QMouseEvent
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout
 
@@ -55,9 +55,10 @@ class MonitorScreen(QWidget):
         self.close = QLabel("X", self)
         self.close.enterEvent(self.close.setCursor(Qt.CursorShape.PointingHandCursor))
         self.close.mouseReleaseEvent = self.on_close_click
-        add_extra_stylesheet(self.close, ".QLabel{{color:white;}}")
+        add_extra_stylesheet(self.close, ".QLabel{{color:white;}} .QLabel:hover{{color:{QTMATERIAL_PRIMARYCOLOR}}}")
         
-        h_box.addStretch(2)
+        h_box.addStretch(1)
+        h_box.addSpacing(20)
         h_box.addWidget(self.nick_name)
         h_box.addStretch(1)
         h_box.addWidget(self.close)
@@ -90,9 +91,20 @@ class MonitorScreen(QWidget):
         self.dynamic = QLabel("")
         self.video = QLabel("")
         self.live = QLabel("")
+        self.dynamic.enterEvent = lambda event: self.check_label_enter(self.dynamic, "dynamic")
+        self.video.enterEvent = lambda event: self.check_label_enter(self.video, "video")
+        self.live.enterEvent = lambda event: self.check_label_enter(self.live, "live")
         v_box.addWidget(self.dynamic)
         v_box.addWidget(self.video)
         v_box.addWidget(self.live)
+    
+    def check_label_enter(self, label: QLabel, label_type: str):
+        if label_type == "dynamic":
+            if not self.dynamic_check: label.setCursor(Qt.CursorShape.PointingHandCursor)
+        elif label_type == "video":
+            if not self.video_check: label.setCursor(Qt.CursorShape.PointingHandCursor)
+        elif label_type == "live":
+            if self.live_status: label.setCursor(Qt.CursorShape.PointingHandCursor)
     
     #  更新用户信息
     def update_user_info(self, user_info: dict) -> bool:
