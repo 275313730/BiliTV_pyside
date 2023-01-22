@@ -1,5 +1,3 @@
-import os
-
 from PySide6.QtWidgets import (QWidget, QGridLayout, QMainWindow)
 from qt_material import QtStyleTools
 
