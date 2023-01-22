@@ -62,7 +62,8 @@ class MonitorScreen(QWidget):
         self.close = QLabel("X", self)
         self.close.enterEvent(self.close.setCursor(Qt.CursorShape.PointingHandCursor))
         self.close.mouseReleaseEvent = self.on_close_click
-        add_extra_stylesheet(self.close, ".QLabel{{color:white;}} .QLabel:hover{{color:{QTMATERIAL_PRIMARYCOLOR}}}")
+        add_extra_stylesheet(self.close,
+                             ".QLabel{{color:white;}} .QLabel:hover{{color:{QTMATERIAL_SECONDARYLIGHTCOLOR}}}")
         
         h_box.addStretch(1)
         h_box.addSpacing(20)
@@ -98,6 +99,9 @@ class MonitorScreen(QWidget):
         self.dynamic = QLabel("")
         self.video = QLabel("")
         self.live = QLabel("")
+        self.dynamic.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.video.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.live.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.dynamic.enterEvent = lambda event:self.check_label_enter(self.dynamic, "dynamic")
         self.video.enterEvent = lambda event:self.check_label_enter(self.video, "video")
         self.live.enterEvent = lambda event:self.check_label_enter(self.live, "live")
@@ -166,30 +170,33 @@ class MonitorScreen(QWidget):
     def update_label(self, data_type: str, data_content: dict):
         if data_type == "dynamic":
             if not self.dynamic_check:
-                add_extra_stylesheet(self.dynamic, ".QLabel{{color:QTMATERIAL_PRIMARYCOLOR;}}")
+                add_extra_stylesheet(self.dynamic,
+                                     ".QLabel{{color:white;}} .QLabel:hover{{background-color:{QTMATERIAL_SECONDARYCOLOR};border-radius:5px}}")
                 self.dynamic_id = data_content['id']
-                self.dynamic.setText("发布新动态，点击查看")
+                self.dynamic.setText("发布新动态")
             else:
-                add_extra_stylesheet(self.dynamic, ".QLabel{{color:white;}}")
+                add_extra_stylesheet(self.dynamic, ".QLabel{{color:{QTMATERIAL_SECONDARYLIGHTCOLOR};}}")
                 self.dynamic.setText("暂无新动态")
         elif data_type == "video":
             if not self.video_check:
-                add_extra_stylesheet(self.video, ".QLabel{{color:QTMATERIAL_PRIMARYCOLOR;}}")
+                add_extra_stylesheet(self.video,
+                                     ".QLabel{{color:white;}} .QLabel:hover{{background-color:{QTMATERIAL_SECONDARYCOLOR};border-radius:5px}}")
                 self.video_bvid = data_content['bvid']
-                self.video.setText("发布新视频，点击查看")
+                self.video.setText("发布新视频")
             else:
-                add_extra_stylesheet(self.video, ".QLabel{{color:white;}}")
+                add_extra_stylesheet(self.video, ".QLabel{{color:{QTMATERIAL_SECONDARYLIGHTCOLOR};}}")
                 self.video.setText("暂无新视频")
         elif data_type == "live":
             if data_content["live_status"] == 1:
                 self.live_url = data_content['url']
                 self.live.setText("直播中")
-                add_extra_stylesheet(self.live, ".QLabel{{color:{QTMATERIAL_PRIMARYCOLOR};}}")
+                add_extra_stylesheet(self.live,
+                                     ".QLabel{{color:white;}} .QLabel:hover{{background-color:{QTMATERIAL_SECONDARYCOLOR};border-radius:5px}}")
                 if not self.live_status:
                     self.live_status = True
                     self.animation.start()
             else:
-                add_extra_stylesheet(self.live, ".QLabel{{color:white}}")
+                add_extra_stylesheet(self.live, ".QLabel{{color:{QTMATERIAL_SECONDARYLIGHTCOLOR}}}")
                 self.live.setText("咕咕咕")
                 if self.live_status:
                     self.live_status = False
