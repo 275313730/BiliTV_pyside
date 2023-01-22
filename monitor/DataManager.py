@@ -99,13 +99,13 @@ class DataManager:
         up_data = DataManager.get_up_data_from_uid(uid)
         last_check_time = up_data[data_type]['last_check_time']
         if data_type == "user":
-            return t - last_check_time > 24 * 60 * 60 * 1000
+            return t - last_check_time > 24 * 60 * 60
         elif data_type == "dynamic":
-            return t - last_check_time > 2 * 60 * 1000
+            return t - last_check_time > 2 * 60
         elif data_type == "video":
-            return t - last_check_time > 2 * 60 * 1000
+            return t - last_check_time > 2 * 60
         elif data_type == "live":
-            return t - last_check_time > 2 * 60 * 1000
+            return t - last_check_time > 2 * 60
 
 
 DataManager.load_up_data()

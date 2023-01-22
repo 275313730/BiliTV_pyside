@@ -1,3 +1,5 @@
+import webbrowser
+
 import requests
 from PySide6.QtCore import Qt, QPropertyAnimation, Property
 from PySide6.QtGui import QImage, QPixmap, QPainter, QPainterPath, QMouseEvent
@@ -21,10 +23,15 @@ class MonitorScreen(QWidget):
     
     dynamic: QLabel = None
     dynamic_check: bool = True
+    dynamic_id: str = None
+    
     video: QLabel = None
     video_check: bool = True
+    video_bvid: str = None
+    
     live: QLabel = None
     live_status: bool = False
+    live_url: str = None
     
     close: QLabel = None
     
@@ -91,9 +98,12 @@ class MonitorScreen(QWidget):
         self.dynamic = QLabel("")
         self.video = QLabel("")
         self.live = QLabel("")
-        self.dynamic.enterEvent = lambda event: self.check_label_enter(self.dynamic, "dynamic")
-        self.video.enterEvent = lambda event: self.check_label_enter(self.video, "video")
-        self.live.enterEvent = lambda event: self.check_label_enter(self.live, "live")
+        self.dynamic.enterEvent = lambda event:self.check_label_enter(self.dynamic, "dynamic")
+        self.video.enterEvent = lambda event:self.check_label_enter(self.video, "video")
+        self.live.enterEvent = lambda event:self.check_label_enter(self.live, "live")
+        self.dynamic.mouseReleaseEvent = lambda event:self.on_label_click("dynamic")
+        self.video.mouseReleaseEvent = lambda event:self.on_label_click("video")
+        self.live.mouseReleaseEvent = lambda event:self.on_label_click("live")
         v_box.addWidget(self.dynamic)
         v_box.addWidget(self.video)
         v_box.addWidget(self.live)
@@ -105,6 +115,14 @@ class MonitorScreen(QWidget):
             if not self.video_check: label.setCursor(Qt.CursorShape.PointingHandCursor)
         elif label_type == "live":
             if self.live_status: label.setCursor(Qt.CursorShape.PointingHandCursor)
+    
+    def on_label_click(self, label_type: str):
+        if label_type == "dynamic":
+            if not self.dynamic_check: webbrowser.open("https://t.bilibili.com/" + self.dynamic_id)
+        elif label_type == "video":
+            if not self.video_check: webbrowser.open("https://www.bilibili.com/video/" + self.video_bvid)
+        elif label_type == "live":
+            if self.live_status: webbrowser.open(self.live_url)
     
     #  更新用户信息
     def update_user_info(self, user_info: dict) -> bool:
@@ -149,6 +167,7 @@ class MonitorScreen(QWidget):
         if data_type == "dynamic":
             if not self.dynamic_check:
                 add_extra_stylesheet(self.dynamic, ".QLabel{{color:QTMATERIAL_PRIMARYCOLOR;}}")
+                self.dynamic_id = data_content['id']
                 self.dynamic.setText("发布新动态，点击查看")
             else:
                 add_extra_stylesheet(self.dynamic, ".QLabel{{color:white;}}")
@@ -156,12 +175,14 @@ class MonitorScreen(QWidget):
         elif data_type == "video":
             if not self.video_check:
                 add_extra_stylesheet(self.video, ".QLabel{{color:QTMATERIAL_PRIMARYCOLOR;}}")
+                self.video_bvid = data_content['bvid']
                 self.video.setText("发布新视频，点击查看")
             else:
                 add_extra_stylesheet(self.video, ".QLabel{{color:white;}}")
                 self.video.setText("暂无新视频")
         elif data_type == "live":
             if data_content["live_status"] == 1:
+                self.live_url = data_content['url']
                 self.live.setText("直播中")
                 add_extra_stylesheet(self.live, ".QLabel{{color:{QTMATERIAL_PRIMARYCOLOR};}}")
                 if not self.live_status:

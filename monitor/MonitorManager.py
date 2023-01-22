@@ -1,3 +1,5 @@
+import platform
+
 from PySide6.QtCore import QObject, Signal
 from bilibili_api import user, sync
 
@@ -13,6 +15,7 @@ class MonitorManager(QObject):
     change_up_signal = Signal(int, int)
     start_loop_signal = Signal()
     loop_time: float = 10000
+    system: str = platform.system().lower()
     
     def __init__(self):
         super().__init__()
