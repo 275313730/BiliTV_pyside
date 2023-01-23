@@ -2,7 +2,7 @@ import webbrowser
 
 import requests
 from PySide6.QtCore import Qt, QPropertyAnimation, Property, Signal
-from PySide6.QtGui import QImage, QPixmap, QPainter, QPainterPath, QMouseEvent
+from PySide6.QtGui import QImage, QPixmap, QPainter, QPainterPath
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout
 
 from utils.Const import Const
@@ -43,13 +43,13 @@ class MonitorScreen(QWidget):
         self.show()
     
     # 初始化ui
-    def init_ui(self):
+    def init_ui(self) -> None:
         v_box = QVBoxLayout(self)
         v_box.setContentsMargins(0, 5, 0, 0)
         self.init_top_side(v_box)
         self.init_center_side(v_box)
     
-    def init_top_side(self, v_box: QVBoxLayout):
+    def init_top_side(self, v_box: QVBoxLayout) -> None:
         h_widget = QWidget()
         h_box = QHBoxLayout(h_widget)
         h_box.setContentsMargins(5, 0, 5, 0)
@@ -61,7 +61,7 @@ class MonitorScreen(QWidget):
         
         self.close = QLabel("X", self)
         self.close.enterEvent(self.close.setCursor(Qt.CursorShape.PointingHandCursor))
-        self.close.mouseReleaseEvent = lambda event:self.del_up_signal.emit(self.uid)
+        self.close.mouseReleaseEvent = lambda event: self.del_up_signal.emit(self.uid)
         Style.change_stylesheet(self.close, Style.close_button_style)
         
         h_box.addStretch(1)
@@ -70,7 +70,7 @@ class MonitorScreen(QWidget):
         h_box.addStretch(1)
         h_box.addWidget(self.close)
     
-    def init_center_side(self, v_box: QVBoxLayout):
+    def init_center_side(self, v_box: QVBoxLayout) -> None:
         h_widget = QWidget()
         h_box = QHBoxLayout(h_widget)
         h_box.setContentsMargins(0, 5, 0, 10)
@@ -80,14 +80,14 @@ class MonitorScreen(QWidget):
         self.init_label(h_box)
         h_box.addStretch(1)
     
-    def init_avatar(self, h_box: QHBoxLayout):
+    def init_avatar(self, h_box: QHBoxLayout) -> None:
         self.avatar = QLabel()
         self.target = QPixmap(self.size, self.size)
         self.target.fill(Qt.transparent)
         self.init_animation()
         h_box.addWidget(self.avatar)
     
-    def init_label(self, h_box: QHBoxLayout):
+    def init_label(self, h_box: QHBoxLayout) -> None:
         label_widget = QWidget()
         v_box = QVBoxLayout(label_widget)
         h_box.addWidget(label_widget)
@@ -97,17 +97,17 @@ class MonitorScreen(QWidget):
         self.dynamic.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.video.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.live.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.dynamic.enterEvent = lambda event:self.check_label_enter(self.dynamic, "dynamic")
-        self.video.enterEvent = lambda event:self.check_label_enter(self.video, "video")
-        self.live.enterEvent = lambda event:self.check_label_enter(self.live, "live")
-        self.dynamic.mouseReleaseEvent = lambda event:self.on_label_click("dynamic")
-        self.video.mouseReleaseEvent = lambda event:self.on_label_click("video")
-        self.live.mouseReleaseEvent = lambda event:self.on_label_click("live")
+        self.dynamic.enterEvent = lambda event: self.check_label_enter(self.dynamic, "dynamic")
+        self.video.enterEvent = lambda event: self.check_label_enter(self.video, "video")
+        self.live.enterEvent = lambda event: self.check_label_enter(self.live, "live")
+        self.dynamic.mouseReleaseEvent = lambda event: self.on_label_click("dynamic")
+        self.video.mouseReleaseEvent = lambda event: self.on_label_click("video")
+        self.live.mouseReleaseEvent = lambda event: self.on_label_click("live")
         v_box.addWidget(self.dynamic)
         v_box.addWidget(self.video)
         v_box.addWidget(self.live)
     
-    def check_label_enter(self, label: QLabel, label_type: str):
+    def check_label_enter(self, label: QLabel, label_type: str) -> None:
         if label_type == "dynamic":
             if not self.dynamic_check: label.setCursor(Qt.CursorShape.PointingHandCursor)
         elif label_type == "video":
@@ -115,7 +115,7 @@ class MonitorScreen(QWidget):
         elif label_type == "live":
             if self.live_status: label.setCursor(Qt.CursorShape.PointingHandCursor)
     
-    def on_label_click(self, label_type: str):
+    def on_label_click(self, label_type: str) -> None:
         if label_type == "dynamic":
             if not self.dynamic_check: webbrowser.open(Const.dynamic_url + self.dynamic_id)
         elif label_type == "video":
@@ -137,7 +137,7 @@ class MonitorScreen(QWidget):
         self.rotate_avatar(0)
         return True
     
-    def rotate_avatar(self, degree: int):
+    def rotate_avatar(self, degree: int) -> None:
         painter = QPainter(self.target)
         painter.translate(self.size / 2, self.size / 2)
         painter.rotate(float(degree))
@@ -153,7 +153,7 @@ class MonitorScreen(QWidget):
         painter.end()
         self.avatar.setPixmap(self.target)
     
-    def init_animation(self):
+    def init_animation(self) -> None:
         self.animation = QPropertyAnimation(self, b'rotation')
         self.animation.setDuration(20000)
         self.animation.setStartValue(0)
@@ -162,7 +162,7 @@ class MonitorScreen(QWidget):
     
     rotation = Property(int, fset=rotate_avatar)
     
-    def update_label(self, data_type: str, data_content: dict):
+    def update_label(self, data_type: str, data_content: dict) -> None:
         if data_type == "dynamic":
             if not self.dynamic_check:
                 Style.change_stylesheet(self.dynamic, Style.active_label_style)
