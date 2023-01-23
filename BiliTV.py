@@ -10,7 +10,7 @@ from utils.Style import Style
 
 
 class BiliTV(QMainWindow, QtStyleTools):
-    layout: QGridLayout = None
+    layout: QGridLayout
     
     def __init__(self):
         super().__init__()

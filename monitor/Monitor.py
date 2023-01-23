@@ -16,10 +16,10 @@ class Monitor(QFrame):
     position: list[int] = []
     add_up_signal: Signal = Signal(int)
     del_up_signal: Signal = Signal(int)
-    button: MonitorButton = None
-    screen: MonitorScreen = None
-    layout: QHBoxLayout = None
-    user: User = None
+    button: MonitorButton
+    screen: MonitorScreen
+    layout: QHBoxLayout
+    user: User
     
     def __init__(self, position: list[int]):
         super().__init__()

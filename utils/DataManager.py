@@ -2,14 +2,16 @@ import json
 import os
 import time
 
+from utils.Utils import Utils
+
 
 class DataManager:
     all_up_data: list[dict] = []
     
     @staticmethod
     def load_up_data():
-        if os.path.exists('up_data.json'):
-            fr = open('up_data.json', 'r', encoding='utf-8')
+        if os.path.exists(Utils.get_path() + 'up_data.json'):
+            fr = open(Utils.get_path() + 'up_data.json', 'r', encoding='utf-8')
             DataManager.all_up_data = json.load(fr)
             fr.close()
         else:
@@ -17,7 +19,7 @@ class DataManager:
     
     @staticmethod
     def write_up_data():
-        fw = open('up_data.json', 'w', encoding='utf-8')
+        fw = open(Utils.get_path() + 'up_data.json', 'w', encoding='utf-8')
         fw.write(json.dumps(DataManager.all_up_data))
         fw.close()
     

@@ -5,7 +5,7 @@ from utils.DataManager import DataManager
 
 
 class MonitorButton(QPushButton):
-    add_up_signal: Signal = None
+    add_up_signal: Signal
     
     def __init__(self):
         super().__init__()

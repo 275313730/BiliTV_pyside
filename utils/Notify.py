@@ -1,18 +1,17 @@
 import os
-import platform
+
+from utils.Const import Const
 
 
 class Notify:
-    system: str = platform.system().lower()
     
     @staticmethod
     def text(content: str):
-        if Notify.system == "windows":
+        if Const.system == "windows":
             from windows_toasts import WindowsToaster, ToastText1
             wintoaster = WindowsToaster('BiliTV')
             new_toast = ToastText1()
             new_toast.SetBody(content)
             wintoaster.show_toast(new_toast)
-        elif Notify.system == "darwin":
+        elif Const.system == "darwin":
             os.system('osascript -e \'display notification "' + content + '" with title "BiliTV"\'')
-

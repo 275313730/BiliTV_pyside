@@ -1,6 +1,6 @@
 import webbrowser
-
 import requests
+
 from PySide6.QtCore import Qt, QPropertyAnimation, Property, Signal
 from PySide6.QtGui import QImage, QPixmap, QPainter, QPainterPath
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout
@@ -13,28 +13,28 @@ class MonitorScreen(QWidget):
     uid: int = 0
     size: int = 95
     
-    del_up_signal: Signal = None
+    del_up_signal: Signal
     
-    avatar: QLabel = None
-    animation: QPropertyAnimation = None
-    target: QPixmap = None
-    pixmap: QPixmap = None
-    avatar_url: str = None
-    nick_name: QLabel = None
+    avatar: QLabel
+    animation: QPropertyAnimation
+    target: QPixmap
+    pixmap: QPixmap
+    avatar_url: str = ""
+    nick_name: QLabel
     
-    dynamic: QLabel = None
+    dynamic: QLabel
     dynamic_check: bool = True
-    dynamic_id: str = None
+    dynamic_id: str = ""
     
-    video: QLabel = None
+    video: QLabel
     video_check: bool = True
-    video_bvid: str = None
+    video_bvid: str = ""
     
-    live: QLabel = None
+    live: QLabel
     live_status: bool = False
-    live_url: str = None
+    live_url: str = ""
     
-    close: QLabel = None
+    close: QLabel
     
     def __init__(self, uid: int):
         super().__init__()
