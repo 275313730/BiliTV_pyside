@@ -1,7 +1,7 @@
 import os
 
-from PySide6.QtGui import QCloseEvent
-from PySide6.QtWidgets import (QWidget, QGridLayout, QMainWindow)
+from PySide6.QtGui import QCloseEvent, QIcon, QAction
+from PySide6.QtWidgets import (QWidget, QGridLayout, QMainWindow, QMenu, QSystemTrayIcon)
 from qt_material import QtStyleTools
 
 from monitor.Monitor import Monitor
@@ -11,11 +11,15 @@ from utils.Style import Style
 
 class BiliTV(QMainWindow, QtStyleTools):
     layout: QGridLayout
+    icon: QIcon
+    context_menu: QMenu
+    tray_icon: QSystemTrayIcon
     
     def __init__(self):
         super().__init__()
         self.init_window()
         self.create_monitor()
+        self.init_ui()
         self.show()
     
     def init_window(self) -> None:
@@ -34,5 +38,25 @@ class BiliTV(QMainWindow, QtStyleTools):
                 monitor = Monitor(position)
                 self.layout.addWidget(monitor, *position)
     
+    def init_ui(self):
+        self.icon = QIcon("favicon.ico")
+        self.setWindowIcon(self.icon)
+        self.create_tray_icon(self.icon)
+        self.tray_icon.show()
+    
+    def create_context_menu(self):
+        quit_action = QAction("退出", self, triggered=lambda: os._exit(0))
+        
+        menu = QMenu(self)
+        menu.addAction(quit_action)
+        return menu
+    
+    def create_tray_icon(self, icon):
+        self.context_menu = self.create_context_menu()
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setContextMenu(self.context_menu)
+        self.tray_icon.setIcon(icon)
+    
     def closeEvent(self, event: QCloseEvent) -> None:
-        os._exit(0)
+        event.ignore()
+        self.showMinimized()
