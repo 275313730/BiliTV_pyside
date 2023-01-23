@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import QPushButton, QInputDialog, QMessageBox
 
 from utils.DataManager import DataManager
@@ -12,6 +12,7 @@ class MonitorButton(QPushButton):
         self.setText("添加up主")
         self.setMinimumSize(50, 20)
         self.clicked.connect(self.on_click)
+        self.enterEvent = lambda event: self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.show()
     
     def on_click(self) -> None:

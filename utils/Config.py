@@ -6,7 +6,7 @@ from utils.Utils import Utils
 class Config:
     @staticmethod
     def load(property_name):
-        fr = open(Utils.get_path() + '/config.json', 'r', encoding="utf-8")
+        fr = open(Utils.get_path() + 'config.json', 'r', encoding="utf-8")
         config_data = load(fr)
         fr.close()
         return config_data[property_name]
