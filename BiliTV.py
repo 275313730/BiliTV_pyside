@@ -7,6 +7,7 @@ from qt_material import QtStyleTools
 from monitor.Monitor import Monitor
 from utils.Config import Config
 from utils.Style import Style
+from utils.Utils import Utils
 
 
 class BiliTV(QMainWindow, QtStyleTools):
@@ -39,7 +40,7 @@ class BiliTV(QMainWindow, QtStyleTools):
                 self.layout.addWidget(monitor, *position)
     
     def init_ui(self):
-        self.icon = QIcon("favicon.ico")
+        self.icon = QIcon(Utils.get_path() + "favicon.ico")
         self.setWindowIcon(self.icon)
         self.create_tray_icon(self.icon)
         self.tray_icon.show()
