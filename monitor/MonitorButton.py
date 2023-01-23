@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QPushButton, QInputDialog, QMessageBox
 
-from monitor.DataManager import DataManager
+from utils.DataManager import DataManager
 
 
 class MonitorButton(QPushButton):

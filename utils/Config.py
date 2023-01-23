@@ -1,8 +1,4 @@
 import json
-import os
-from threading import Timer
-
-from PySide6.QtWidgets import QWidget
 
 
 class Config:
@@ -22,13 +18,3 @@ class Config:
         fw = open('config.json', 'w', encoding="utf-8")
         fw.write(json.dumps(config_data))
         fw.close()
-
-
-def add_extra_stylesheet(o: QWidget, extra_stylesheet: str):
-    o.setStyleSheet(extra_stylesheet.format(**os.environ))
-
-
-def set_timeout(ms: float, fn: callable, *args, **kwargs):
-    t = Timer(ms / 1000., fn, args=args, kwargs=kwargs)
-    t.start()
-    return t

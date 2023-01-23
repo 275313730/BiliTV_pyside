@@ -3,7 +3,8 @@ from qt_material import QtStyleTools
 
 from monitor.MonitorManager import MonitorManager
 from monitor.Monitor import Monitor
-from utils import Config, add_extra_stylesheet
+from utils.Config import Config
+from utils.Style import Style
 
 
 class BiliTV(QMainWindow, QtStyleTools):
@@ -14,13 +15,13 @@ class BiliTV(QMainWindow, QtStyleTools):
         super().__init__()
         self.init_window()
         self.create_monitor()
-        self.monitorManager.start_loop_signal.emit()
+        self.monitorManager.loop()
         self.show()
     
     def init_window(self):
         self.apply_stylesheet(self, theme=f'{Config.load("current_theme")}.xml')
         central_widget = QWidget()
-        add_extra_stylesheet(self, ".BiliTV{{background-color:{QTMATERIAL_SECONDARYCOLOR}}}")
+        Style.change_stylesheet(self, ".BiliTV{{background-color:{QTMATERIAL_SECONDARYCOLOR}}}")
         self.setCentralWidget(central_widget)
         self.layout = QGridLayout(central_widget)
         self.move(200, 200)
