@@ -5,3 +5,4 @@ up_data.json
 build
 dist
 *.spec
+.idea
