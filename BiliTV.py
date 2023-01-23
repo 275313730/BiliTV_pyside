@@ -45,9 +45,11 @@ class BiliTV(QMainWindow, QtStyleTools):
         self.tray_icon.show()
     
     def create_context_menu(self):
+        show_action = QAction("显示", self, triggered=lambda: self.show())
         quit_action = QAction("退出", self, triggered=lambda: os._exit(0))
         
         menu = QMenu(self)
+        menu.addAction(show_action)
         menu.addAction(quit_action)
         return menu
     
@@ -56,7 +58,12 @@ class BiliTV(QMainWindow, QtStyleTools):
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setContextMenu(self.context_menu)
         self.tray_icon.setIcon(icon)
+        self.tray_icon.activated.connect(self.on_tray_clicked)
+    
+    def on_tray_clicked(self, reason):
+        if reason == 2 or reason == 3:
+            self.show()
     
     def closeEvent(self, event: QCloseEvent) -> None:
         event.ignore()
-        self.showMinimized()
+        self.hide()
