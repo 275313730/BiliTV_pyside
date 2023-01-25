@@ -22,6 +22,7 @@ class BiliTV(QMainWindow, QtStyleTools):
         self.create_monitor()
         self.init_ui()
         self.show()
+        self.setFixedSize(self.width(), self.height())
     
     def init_window(self) -> None:
         self.apply_stylesheet(self, theme=f'{Config.load("current_theme")}.xml')

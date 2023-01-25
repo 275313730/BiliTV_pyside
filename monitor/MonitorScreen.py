@@ -6,6 +6,7 @@ from PySide6.QtGui import QImage, QPixmap, QPainter, QPainterPath
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout
 
 from utils.Const import Const
+from utils.DataManager import DataManager
 from utils.Style import Style
 
 
@@ -90,6 +91,7 @@ class MonitorScreen(QWidget):
     def init_label(self, h_box: QHBoxLayout) -> None:
         label_widget = QWidget()
         v_box = QVBoxLayout(label_widget)
+        h_box.addSpacing(8)
         h_box.addWidget(label_widget)
         self.dynamic = QLabel("")
         self.video = QLabel("")
@@ -97,9 +99,9 @@ class MonitorScreen(QWidget):
         self.dynamic.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.video.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.live.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.dynamic.enterEvent = lambda event: self.check_label_enter(self.dynamic, "dynamic")
-        self.video.enterEvent = lambda event: self.check_label_enter(self.video, "video")
-        self.live.enterEvent = lambda event: self.check_label_enter(self.live, "live")
+        self.dynamic.enterEvent = lambda event: self.check_label_enter(self.dynamic, self.dynamic_check)
+        self.video.enterEvent = lambda event: self.check_label_enter(self.video, self.video_check)
+        self.live.enterEvent = lambda event: self.check_label_enter(self.live, not self.live_status)
         self.dynamic.mouseReleaseEvent = lambda event: self.on_label_click("dynamic")
         self.video.mouseReleaseEvent = lambda event: self.on_label_click("video")
         self.live.mouseReleaseEvent = lambda event: self.on_label_click("live")
@@ -107,19 +109,25 @@ class MonitorScreen(QWidget):
         v_box.addWidget(self.video)
         v_box.addWidget(self.live)
     
-    def check_label_enter(self, label: QLabel, label_type: str) -> None:
-        if label_type == "dynamic":
-            if not self.dynamic_check: label.setCursor(Qt.CursorShape.PointingHandCursor)
-        elif label_type == "video":
-            if not self.video_check: label.setCursor(Qt.CursorShape.PointingHandCursor)
-        elif label_type == "live":
-            if self.live_status: label.setCursor(Qt.CursorShape.PointingHandCursor)
+    def check_label_enter(self, label: QLabel, status: bool) -> None:
+        if status:
+            label.setCursor(Qt.CursorShape.ArrowCursor)
+        else:
+            label.setCursor(Qt.CursorShape.PointingHandCursor)
     
     def on_label_click(self, label_type: str) -> None:
         if label_type == "dynamic":
-            if not self.dynamic_check: webbrowser.open(Const.dynamic_url + self.dynamic_id)
+            if not self.dynamic_check:
+                webbrowser.open(f"{Const.dynamic_url}{self.dynamic_id}")
+                self.dynamic_check = True
+                DataManager.change_check_status(self.uid, "dynamic")
+                self.update_label("dynamic", dict(read=True))
         elif label_type == "video":
-            if not self.video_check: webbrowser.open(Const.video_url + self.video_bvid)
+            if not self.video_check:
+                webbrowser.open(f"{Const.video_url}{self.video_bvid}")
+                self.video_check = True
+                DataManager.change_check_status(self.uid, "video")
+                self.update_label("video", dict(read=True))
         elif label_type == "live":
             if self.live_status: webbrowser.open(self.live_url)
     
@@ -164,33 +172,33 @@ class MonitorScreen(QWidget):
     
     def update_label(self, data_type: str, data_content: dict) -> None:
         if data_type == "dynamic":
-            if not self.dynamic_check:
+            if not data_content['read']:
                 Style.change_stylesheet(self.dynamic, Style.active_label_style)
                 self.dynamic_id = data_content['id']
                 self.dynamic.setText("发布新动态")
+                self.dynamic_check = False
             else:
                 Style.change_stylesheet(self.dynamic, Style.normal_label_style)
                 self.dynamic.setText("暂无新动态")
         elif data_type == "video":
-            if not self.video_check:
+            if not data_content['read']:
                 Style.change_stylesheet(self.video, Style.active_label_style)
                 self.video_bvid = data_content['bvid']
                 self.video.setText("发布新视频")
+                self.video_check = False
             else:
                 Style.change_stylesheet(self.video, Style.normal_label_style)
                 self.video.setText("暂无新视频")
         elif data_type == "live":
-            if data_content["live_status"] == 1:
+            if data_content["live_status"]:
                 self.live_url = data_content['url']
                 self.live.setText("直播中")
                 Style.change_stylesheet(self.live, Style.active_label_style)
-                if not self.live_status:
-                    self.live_status = True
-                    self.animation.start()
+                self.live_status = True
+                self.animation.start()
             else:
                 Style.change_stylesheet(self.live, Style.normal_label_style)
                 self.live.setText("咕咕咕")
-                if self.live_status:
-                    self.live_status = False
-                    self.animation.stop()
-                    self.rotate_avatar(0)
+                self.live_status = False
+                self.animation.stop()
+                self.rotate_avatar(0)

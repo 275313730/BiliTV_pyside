@@ -2,6 +2,7 @@ import json
 import os
 import time
 
+from utils.Const import Const
 from utils.Utils import Utils
 
 
@@ -108,7 +109,13 @@ class DataManager:
         if data_type == "user":
             return t - last_check_time > 24 * 60 * 60
         else:
-            return t - last_check_time > 2 * 60
+            return t - last_check_time > Const.update_min_interval * len(DataManager.all_up_data)
+    
+    @staticmethod
+    def change_check_status(uid: int, data_type: str):
+        up_data = DataManager.get_up_data_from_uid(uid)
+        up_data[data_type]['read'] = True
+        DataManager.write_up_data()
 
 
 DataManager.load_up_data()

@@ -1,7 +1,12 @@
+import time
+
 from bilibili_api import user, sync
 
 
 class BiliAPI:
+    run_start_time: float = time.time()
+    call_count: int = 0
+    
     # 获取up资料
     @staticmethod
     def get_user_info(u: user.User) -> dict:
@@ -41,4 +46,5 @@ class BiliAPI:
     def get_live_info(u: user.User):
         live_data = sync(u.get_live_info())
         live_info = live_data['live_room']
-        return dict(live_status=int(live_info['liveStatus']), url=live_info['url'])
+        live_status = int(live_info['liveStatus']) == 1
+        return dict(live_status=live_status, url=live_info['url'])

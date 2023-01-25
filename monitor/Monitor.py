@@ -1,3 +1,5 @@
+import time
+
 from PySide6.QtCore import Signal
 from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QHBoxLayout, QFrame
@@ -43,8 +45,14 @@ class Monitor(QFrame):
     # 循环获取up信息
     def loop(self) -> None:
         if self.screen:
-            self.get_new_data(self.screen.uid)
-            Utils.set_timeout(Const.loop_time, self.loop)
+            try:
+                self.get_new_data(self.screen.uid)
+            except Exception as e:
+                print(e)
+                
+                Notify.text("无法获取UP信息")
+            finally:
+                Utils.set_timeout(Const.loop_time, self.loop)
     
     def create_button(self) -> None:
         button = MonitorButton()
@@ -59,6 +67,11 @@ class Monitor(QFrame):
         self.screen = screen
         DataManager.add_up(uid, self.position)
         self.user = User(uid)
+        up_data = DataManager.get_up_data_from_uid(uid)
+        self.screen.update_user_info(up_data["user"])
+        self.screen.update_label("dynamic", up_data["dynamic"])
+        self.screen.update_label("video", up_data["video"])
+        self.screen.update_label("live", up_data['live'])
         self.loop()
     
     def emit_uid(self, uid: int) -> None:
@@ -77,35 +90,37 @@ class Monitor(QFrame):
         
         if DataManager.need_update(uid, "user"):
             new_user_info = BiliAPI.get_user_info(self.user)
+            BiliAPI.call_count += 1
+            print(f"API调用次数:{BiliAPI.call_count},运行时长(分钟):{int((time.time() - BiliAPI.run_start_time) / 60)}")
             DataManager.update_up_data(uid, "user", new_user_info)
             self.screen.update_user_info(new_user_info)
-        else:
-            self.screen.update_user_info(up_data["user"])
         
         if DataManager.need_update(uid, "dynamic"):
             new_dynamic_data = BiliAPI.get_dynamic_data(self.user)
+            BiliAPI.call_count += 1
+            print(f"API调用次数:{BiliAPI.call_count},运行时长(分钟):{int((time.time() - BiliAPI.run_start_time) / 60)}")
             update_status = DataManager.update_up_data(uid, "dynamic", new_dynamic_data)
-            self.screen.update_label("dynamic", dict(id=new_dynamic_data['id']))
-            if update_status: Notify.text(f'「{nick_name}」发布了一条新动态')
-        else:
-            self.screen.update_label("dynamic", dict(id=up_data["dynamic"]['id']))
+            if update_status:
+                self.screen.update_label("dynamic", dict(id=new_dynamic_data['id'], read=False))
+                Notify.text(f'「{nick_name}」发布了一条新动态')
         
         if DataManager.need_update(uid, "video"):
             new_video_data = BiliAPI.get_video_data(self.user)
+            BiliAPI.call_count += 1
+            print(f"API调用次数:{BiliAPI.call_count},运行时长(分钟):{int((time.time() - BiliAPI.run_start_time) / 60)}")
             update_status = DataManager.update_up_data(uid, "video", new_video_data)
-            self.screen.update_label("video", dict(bvid=new_video_data['bvid']))
-            if update_status: Notify.text(f'「{nick_name}」发布了一条新视频')
-        else:
-            self.screen.update_label("video", dict(bvid=up_data['video']['bvid']))
+            if update_status:
+                self.screen.update_label("video", dict(bvid=new_video_data['bvid'], read=False))
+                Notify.text(f'「{nick_name}」发布了一条新视频')
         
         if DataManager.need_update(uid, "live"):
             new_live_info = BiliAPI.get_live_info(self.user)
+            BiliAPI.call_count += 1
+            print(f"API调用次数:{BiliAPI.call_count},运行时长(分钟):{int((time.time() - BiliAPI.run_start_time) / 60)}")
             update_status = DataManager.update_up_data(uid, "live", new_live_info)
-            self.screen.update_label("live", new_live_info)
             if update_status:
+                self.screen.update_label("live", new_live_info)
                 if new_live_info['live_status']:
                     Notify.text(f'「{nick_name}」上播了')
                 else:
                     Notify.text(f'「{nick_name}」下播了')
-        else:
-            self.screen.update_label("live", up_data['live'])
