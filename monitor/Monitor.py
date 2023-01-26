@@ -26,7 +26,7 @@ class Monitor(QFrame):
     def __init__(self, position: list[int]):
         super().__init__()
         self.setMinimumSize(*Const.min_size)
-        self.layout = QHBoxLayout(self)
+        self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
         self.position = position
@@ -34,6 +34,7 @@ class Monitor(QFrame):
         self.add_up_signal.connect(self.emit_uid)
         self.del_up_signal.connect(self.emit_reset)
         self.check_position()
+        self.setLayout(self.layout)
         self.show()
     
     def check_position(self) -> None:
@@ -47,10 +48,14 @@ class Monitor(QFrame):
         if self.screen:
             try:
                 self.get_new_data(self.screen.uid)
+                if BiliAPI.network_error:
+                    BiliAPI.network_error = False
+                    Notify.text("网络恢复正常")
             except Exception as e:
                 print(e)
-                
-                Notify.text("无法获取UP信息")
+                if not BiliAPI.network_error:
+                    BiliAPI.network_error = True
+                    Notify.text("网络错误，无法获取UP信息")
             finally:
                 Utils.set_timeout(Const.loop_time, self.loop)
     

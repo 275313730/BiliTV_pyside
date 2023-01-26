@@ -4,8 +4,12 @@ from bilibili_api import user, sync
 
 
 class BiliAPI:
+    # 测试用
     run_start_time: float = time.time()
     call_count: int = 0
+    
+    # 判断网络情况
+    network_error: bool = False
     
     # 获取up资料
     @staticmethod

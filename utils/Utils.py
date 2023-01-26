@@ -1,6 +1,5 @@
-import os
-import sys
 from threading import Timer
+import base64
 
 from utils.Const import Const
 
@@ -15,6 +14,13 @@ class Utils:
     @staticmethod
     def get_path():
         if Const.system == "windows":
-            return ""
+            return Const.windows_user_path + "/"
         else:
-            return os.path.split(sys.argv[0])[0] + "/"
+            return Const.mac_user_path + "/"
+    
+    @staticmethod
+    def get_favicon_data():
+        bs64_str = Const.favicon_base64
+        # 将base64格式的数据装换为二进制数据
+        imgdata = base64.b64decode(bs64_str)
+        return imgdata
