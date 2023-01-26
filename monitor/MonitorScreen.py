@@ -14,36 +14,36 @@ from utils.Utils import Utils
 class MonitorScreen(QWidget):
     uid: int = 0
     size: int = 95
-
+    
     del_up_signal: Signal
-
+    
     avatar: QLabel
     animation: QPropertyAnimation
     target: QPixmap
-    pixmap: QPixmap
+    pixmap: QPixmap=None
     avatar_url: str = ""
     nick_name: QLabel
-
+    
     dynamic: QLabel
     dynamic_check: bool = True
     dynamic_id: str = ""
-
+    
     video: QLabel
     video_check: bool = True
     video_bvid: str = ""
-
+    
     live: QLabel
     live_status: bool = False
     live_url: str = ""
-
+    
     close: QLabel
-
+    
     def __init__(self, uid: int):
         super().__init__()
         self.uid = uid
         self.init_ui()
         self.show()
-
+    
     # 初始化ui
     def init_ui(self) -> None:
         v_box = QVBoxLayout()
@@ -51,30 +51,30 @@ class MonitorScreen(QWidget):
         self.init_top_side(v_box)
         self.init_center_side(v_box)
         self.setLayout(v_box)
-
+    
     def init_top_side(self, v_box: QVBoxLayout) -> None:
         h_widget = QWidget()
         h_box = QHBoxLayout()
         h_box.setContentsMargins(5, 0, 5, 0)
-
+        
         self.nick_name = QLabel("")
         Style.change_stylesheet(self.nick_name, ".QLabel{{color:white;}}")
         self.nick_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
+        
         self.close = QLabel("X", self)
         self.close.enterEvent(self.close.setCursor(Qt.CursorShape.PointingHandCursor))
         self.close.mouseReleaseEvent = lambda event: self.del_up_signal.emit(self.uid)
         Style.change_stylesheet(self.close, Style.close_button_style)
-
+        
         h_box.addStretch(1)
         h_box.addSpacing(20)
         h_box.addWidget(self.nick_name)
         h_box.addStretch(1)
         h_box.addWidget(self.close)
-
+        
         h_widget.setLayout(h_box)
         v_box.addWidget(h_widget)
-
+    
     def init_center_side(self, v_box: QVBoxLayout) -> None:
         h_widget = QWidget()
         h_box = QHBoxLayout(h_widget)
@@ -84,14 +84,14 @@ class MonitorScreen(QWidget):
         self.init_avatar(h_box)
         self.init_label(h_box)
         h_box.addStretch(1)
-
+    
     def init_avatar(self, h_box: QHBoxLayout) -> None:
         self.avatar = QLabel()
         self.target = QPixmap(self.size, self.size)
         self.target.fill(Qt.transparent)
         self.init_animation()
         h_box.addWidget(self.avatar)
-
+    
     def init_label(self, h_box: QHBoxLayout) -> None:
         label_widget = QWidget()
         v_box = QVBoxLayout(label_widget)
@@ -112,47 +112,47 @@ class MonitorScreen(QWidget):
         v_box.addWidget(self.dynamic)
         v_box.addWidget(self.video)
         v_box.addWidget(self.live)
-
+    
     def check_label_enter(self, label: QLabel, status: bool) -> None:
         if status:
             label.setCursor(Qt.CursorShape.ArrowCursor)
         else:
             label.setCursor(Qt.CursorShape.PointingHandCursor)
-
+    
     def on_label_click(self, label_type: str) -> None:
-        if label_type=="dynamic":
+        if label_type == "dynamic":
             if not self.dynamic_check:
                 webbrowser.open(f"{Const.dynamic_url}{self.dynamic_id}")
                 self.dynamic_check = True
                 DataManager.change_check_status(self.uid, "dynamic")
                 self.update_label("dynamic", dict(read=True))
-        elif label_type=="video":
+        elif label_type == "video":
             if not self.video_check:
                 webbrowser.open(f"{Const.video_url}{self.video_bvid}")
                 self.video_check = True
                 DataManager.change_check_status(self.uid, "video")
                 self.update_label("video", dict(read=True))
-        elif label_type=="live":
+        elif label_type == "live":
             if self.live_status: webbrowser.open(self.live_url)
-
+    
     #  更新用户信息
     def update_user_info(self, user_info: dict) -> bool:
         avatar_url = user_info['avatar_url']
         nick_name = user_info['nick_name']
         self.nick_name.setText(nick_name)
-        if avatar_url==self.avatar_url: return False
+        if avatar_url == self.avatar_url: return False
         self.avatar_url = avatar_url
         try:
             res = requests.get(avatar_url)
             img = QImage.fromData(res.content)
             self.pixmap = QPixmap.fromImage(img).scaled(self.size, self.size, Qt.KeepAspectRatioByExpanding,
-                Qt.SmoothTransformation)
+                                                        Qt.SmoothTransformation)
             self.rotate_avatar(0)
         except Exception as e:
             print(e)
-            Utils.set_timeout(Const.loop_time,self.update_user_info,user_info)
+            Utils.set_timeout(Const.loop_time, self.update_user_info, user_info)
         return True
-
+    
     def rotate_avatar(self, degree: int) -> None:
         painter = QPainter(self.target)
         painter.translate(self.size / 2, self.size / 2)
@@ -168,18 +168,18 @@ class MonitorScreen(QWidget):
         painter.drawPixmap(0, 0, self.pixmap)
         painter.end()
         self.avatar.setPixmap(self.target)
-
+    
     def init_animation(self) -> None:
         self.animation = QPropertyAnimation(self, b'rotation')
         self.animation.setDuration(20000)
         self.animation.setStartValue(0)
         self.animation.setEndValue(360)
         self.animation.setLoopCount(-1)
-
+    
     rotation = Property(int, fset=rotate_avatar)
-
+    
     def update_label(self, data_type: str, data_content: dict) -> None:
-        if data_type=="dynamic":
+        if data_type == "dynamic":
             if not data_content['read']:
                 Style.change_stylesheet(self.dynamic, Style.active_label_style)
                 self.dynamic_id = data_content['id']
@@ -188,7 +188,7 @@ class MonitorScreen(QWidget):
             else:
                 Style.change_stylesheet(self.dynamic, Style.normal_label_style)
                 self.dynamic.setText("暂无新动态")
-        elif data_type=="video":
+        elif data_type == "video":
             if not data_content['read']:
                 Style.change_stylesheet(self.video, Style.active_label_style)
                 self.video_bvid = data_content['bvid']
@@ -197,7 +197,7 @@ class MonitorScreen(QWidget):
             else:
                 Style.change_stylesheet(self.video, Style.normal_label_style)
                 self.video.setText("暂无新视频")
-        elif data_type=="live":
+        elif data_type == "live":
             if data_content["live_status"]:
                 self.live_url = data_content['url']
                 self.live.setText("直播中")
