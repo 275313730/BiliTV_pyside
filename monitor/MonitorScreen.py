@@ -1,4 +1,6 @@
 import webbrowser
+from typing import Union
+
 import requests
 
 from PySide6.QtCore import Qt, QPropertyAnimation, Property, Signal
@@ -20,7 +22,7 @@ class MonitorScreen(QWidget):
     avatar: QLabel
     animation: QPropertyAnimation
     target: QPixmap
-    pixmap: QPixmap=None
+    pixmap: Union[QPixmap, None] = None
     avatar_url: str = ""
     nick_name: QLabel
     
@@ -42,7 +44,6 @@ class MonitorScreen(QWidget):
         super().__init__()
         self.uid = uid
         self.init_ui()
-        self.show()
     
     # 初始化ui
     def init_ui(self) -> None:
@@ -154,6 +155,7 @@ class MonitorScreen(QWidget):
         return True
     
     def rotate_avatar(self, degree: int) -> None:
+        if not self.pixmap: return
         painter = QPainter(self.target)
         painter.translate(self.size / 2, self.size / 2)
         painter.rotate(float(degree))

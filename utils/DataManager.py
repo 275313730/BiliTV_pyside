@@ -75,28 +75,29 @@ class DataManager:
     def update_up_data(uid: int, data_type: str, data_content: dict):
         up_data = DataManager.get_up_data_from_uid(uid)
         data = up_data[data_type]
+        first_update: bool = int(data['last_check_time']) == 0
         update_status: bool = False
         if data_type == 'user':
             data['avatar_url'] = data_content['avatar_url']
             data['nick_name'] = data_content['nick_name']
+            update_status = True
         elif data_type == 'dynamic':
             if data['time'] < data_content['time']:
                 data['time'] = data_content['time']
                 data['id'] = data_content['id']
-                data['read'] = False
-                update_status = True
+                data['read'] = first_update
+                update_status = not first_update
         elif data_type == 'video':
             if data['time'] < data_content['time']:
                 data['time'] = data_content['time']
                 data['bvid'] = data_content['bvid']
-                data['read'] = False
-                update_status = True
+                data['read'] = first_update
+                update_status = not first_update
         elif data_type == 'live':
             if data['live_status'] != data_content['live_status']:
                 data['live_status'] = data_content['live_status']
                 data['url'] = data_content['url']
                 update_status = True
-        if int(data['last_check_time']) == 0: update_status = False
         data['last_check_time'] = int(time.time())
         DataManager.write_up_data()
         return update_status

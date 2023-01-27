@@ -13,7 +13,6 @@ class MonitorButton(QPushButton):
         self.setMinimumSize(50, 20)
         self.clicked.connect(self.on_click)
         self.enterEvent = lambda event: self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.show()
     
     def on_click(self) -> None:
         text, ok = QInputDialog.getText(self, 'uid设置',

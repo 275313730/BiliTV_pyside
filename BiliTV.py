@@ -1,7 +1,7 @@
 import os
 
 from PySide6.QtGui import QCloseEvent, QIcon, QAction, QPixmap
-from PySide6.QtWidgets import (QWidget, QGridLayout, QMainWindow, QMenu, QSystemTrayIcon)
+from PySide6.QtWidgets import (QWidget, QGridLayout, QMainWindow, QMenu, QSystemTrayIcon, QMessageBox)
 from qt_material import apply_stylesheet
 
 from monitor.Monitor import Monitor
@@ -11,11 +11,13 @@ from utils.Utils import Utils
 
 
 class BiliTV(QMainWindow):
-    central_widget:QWidget
+    central_widget: QWidget
     layout: QGridLayout
+    pixmap: QPixmap
     icon: QIcon
     context_menu: QMenu
     tray_icon: QSystemTrayIcon
+    monitors: list[Monitor] = []
     
     def __init__(self):
         super().__init__()
@@ -23,6 +25,8 @@ class BiliTV(QMainWindow):
         self.init_ui()
         self.create_monitor()
         self.central_widget.setLayout(self.layout)
+        for m in self.monitors:
+            m.show_all()
         self.show()
         self.setFixedSize(self.width(), self.height())
     
@@ -41,11 +45,12 @@ class BiliTV(QMainWindow):
                 position = [i, j]
                 monitor = Monitor(position)
                 self.layout.addWidget(monitor, *position)
+                self.monitors.append(monitor)
     
     def init_ui(self):
-        pixmap = QPixmap()  # 用于绘制图像的类
-        pixmap.loadFromData(Utils.get_favicon_data())
-        self.icon = QIcon(pixmap)
+        self.pixmap = QPixmap()  # 用于绘制图像的类
+        self.pixmap.loadFromData(Utils.get_favicon_data())
+        self.icon = QIcon(self.pixmap)
         self.setWindowIcon(self.icon)
         self.create_tray_icon()
         self.tray_icon.show()
@@ -72,4 +77,15 @@ class BiliTV(QMainWindow):
     
     def closeEvent(self, event: QCloseEvent) -> None:
         event.ignore()
-        self.hide()
+        message_box = QMessageBox()
+        message_box.setText("是否退出")
+        message_box.setStandardButtons(QMessageBox.StandardButton.No | QMessageBox.StandardButton.Yes)
+        button_y = message_box.button(QMessageBox.StandardButton.Yes)
+        button_y.setText("后台运行")
+        button_n = message_box.button(QMessageBox.StandardButton.No)
+        button_n.setText("直接退出")
+        message_box.exec_()
+        if message_box.clickedButton() == button_y:
+            self.hide()
+        else:
+            os._exit(0)

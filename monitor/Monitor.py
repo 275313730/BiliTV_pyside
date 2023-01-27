@@ -1,4 +1,5 @@
 import time
+from typing import Union
 
 from PySide6.QtCore import Signal
 from PySide6.QtGui import Qt
@@ -18,8 +19,8 @@ class Monitor(QFrame):
     position: list[int] = []
     add_up_signal: Signal = Signal(int)
     del_up_signal: Signal = Signal(int)
-    button: MonitorButton
-    screen: MonitorScreen
+    button: Union[MonitorButton, None] = None
+    screen: Union[MonitorScreen, None] = None
     layout: QHBoxLayout
     user: User
     
@@ -35,6 +36,12 @@ class Monitor(QFrame):
         self.del_up_signal.connect(self.emit_reset)
         self.check_position()
         self.setLayout(self.layout)
+    
+    def show_all(self):
+        if self.screen:
+            self.screen.show()
+        else:
+            self.button.show()
         self.show()
     
     def check_position(self) -> None:
@@ -66,12 +73,13 @@ class Monitor(QFrame):
         self.button = button
     
     def create_screen(self, uid: int) -> None:
-        screen = MonitorScreen(uid)
-        screen.del_up_signal = self.del_up_signal
-        self.layout.addWidget(screen)
-        self.screen = screen
+        self.screen = MonitorScreen(uid)
+        self.screen.del_up_signal = self.del_up_signal
+        self.layout.addWidget(self.screen)
         DataManager.add_up(uid, self.position)
         self.user = User(uid)
+        
+        # 初始化label
         up_data = DataManager.get_up_data_from_uid(uid)
         self.screen.update_user_info(up_data["user"])
         self.screen.update_label("dynamic", up_data["dynamic"])
@@ -85,20 +93,21 @@ class Monitor(QFrame):
     
     def emit_reset(self, uid: int) -> None:
         self.screen.deleteLater()
+        self.screen = None
         DataManager.del_up(uid)
         self.button.show()
     
     # 获取up信息
     def get_new_data(self, uid: int) -> None:
-        up_data = DataManager.get_up_data_from_uid(uid)
-        nick_name = up_data['user']['nick_name']
-        
         if DataManager.need_update(uid, "user"):
             new_user_info = BiliAPI.get_user_info(self.user)
             BiliAPI.call_count += 1
             print(f"API调用次数:{BiliAPI.call_count},运行时长(分钟):{int((time.time() - BiliAPI.run_start_time) / 60)}")
             DataManager.update_up_data(uid, "user", new_user_info)
             self.screen.update_user_info(new_user_info)
+        
+        up_data = DataManager.get_up_data_from_uid(uid)
+        nick_name = up_data['user']['nick_name']
         
         if DataManager.need_update(uid, "dynamic"):
             new_dynamic_data = BiliAPI.get_dynamic_data(self.user)
